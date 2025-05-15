@@ -1,41 +1,266 @@
-# Compiled Lua sources
-luac.out
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
-# luarocks build files
-*.src.rock
-*.zip
-*.tar.gz
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local gui = Instance.new("ScreenGui")
+gui.Name = "c00lhubGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
-# Object files
-*.o
-*.os
-*.ko
-*.obj
-*.elf
+local correctKey = "00816"
 
-# Precompiled Headers
-*.gch
-*.pch
+-- Key Page
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0, 300, 0, 150)
+keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+keyFrame.BorderSizePixel = 0
+keyFrame.ClipsDescendants = true
+keyFrame.Active = true
+keyFrame.Draggable = true
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-*.def
-*.exp
+local keyTitle = Instance.new("TextLabel", keyFrame)
+keyTitle.Size = UDim2.new(1, 0, 0, 40)
+keyTitle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+keyTitle.TextColor3 = Color3.new(1, 1, 1)
+keyTitle.Font = Enum.Font.GothamBold
+keyTitle.TextSize = 24
+keyTitle.Text = "Enter Access Key"
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+local keyBox = Instance.new("TextBox", keyFrame)
+keyBox.Size = UDim2.new(1, -20, 0, 40)
+keyBox.Position = UDim2.new(0, 10, 0, 50)
+keyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+keyBox.TextColor3 = Color3.new(1, 1, 1)
+keyBox.Font = Enum.Font.GothamBold
+keyBox.TextSize = 20
+keyBox.ClearTextOnFocus = false
+keyBox.PlaceholderText = "Type key here"
+keyBox.Text = ""
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+local infoLabel = Instance.new("TextLabel", keyFrame)
+infoLabel.Size = UDim2.new(1, -20, 0, 30)
+infoLabel.Position = UDim2.new(0, 10, 0, 95)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+infoLabel.Font = Enum.Font.GothamBold
+infoLabel.TextSize = 18
+infoLabel.Text = ""
 
+local submitButton = Instance.new("TextButton", keyFrame)
+submitButton.Size = UDim2.new(0, 100, 0, 35)
+submitButton.Position = UDim2.new(0.5, -50, 1, -40)
+submitButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+submitButton.TextColor3 = Color3.new(1, 1, 1)
+submitButton.Font = Enum.Font.GothamBold
+submitButton.TextSize = 18
+submitButton.Text = "Submit"
+
+-- Main Hub Frame (hidden initially)
+local mainFrame = Instance.new("Frame", gui)
+mainFrame.Size = UDim2.new(0, 220, 0, 190)
+mainFrame.Position = UDim2.new(0, 100, 0, 100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.ClipsDescendants = true
+mainFrame.Visible = false
+
+local padding = Instance.new("UIPadding", mainFrame)
+padding.PaddingLeft = UDim.new(0, 6)
+padding.PaddingRight = UDim.new(0, 6)
+padding.PaddingTop = UDim.new(0, 6)
+padding.PaddingBottom = UDim.new(0, 6)
+
+local layout = Instance.new("UIListLayout", mainFrame)
+layout.Padding = UDim.new(0, 6)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.Text = "c00lHub"
+title.Parent = mainFrame
+
+-- Button factory
+local function makeButton(text)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1, 0, 0, 40)
+	b.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	b.TextColor3 = Color3.new(1, 1, 1)
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 16
+	b.Text = text
+	b.Parent = mainFrame
+	return b
+end
+
+-- Fly variables
+local flying = false
+local flyConn
+local bv, bg
+
+local function toggleFly()
+	flying = not flying
+	if flying then
+		local char = player.Character or player.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		for _, obj in pairs(hrp:GetChildren()) do
+			if obj:IsA("BodyVelocity") or obj:IsA("BodyGyro") then
+				obj:Destroy()
+			end
+		end
+		bv = Instance.new("BodyVelocity", hrp)
+		bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+		bv.Velocity = Vector3.new(0,0,0)
+		bg = Instance.new("BodyGyro", hrp)
+		bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+		bg.CFrame = hrp.CFrame
+		flyConn = RunService.RenderStepped:Connect(function()
+			local cam = workspace.CurrentCamera.CFrame
+			local dir = Vector3.zero
+			if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cam.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.RightVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.RightVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += cam.UpVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= cam.UpVector end
+			if dir.Magnitude > 0 then
+				bv.Velocity = dir.Unit * 60
+			else
+				bv.Velocity = Vector3.new(0, 0, 0)
+			end
+			bg.CFrame = cam
+		end)
+	else
+		if flyConn then flyConn:Disconnect() end
+		flyConn = nil
+		if bv then bv:Destroy() end
+		if bg then bg:Destroy() end
+		bv = nil
+		bg = nil
+	end
+end
+
+-- ESP variables
+local espEnabled = false
+local espBoxes = {}
+local characterConnections = {}
+
+local function createESPForCharacter(char)
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if hrp and humanoid and humanoid.Health > 0 then
+		local box = Instance.new("BoxHandleAdornment")
+		box.Adornee = hrp
+		box.Size = Vector3.new(4, 6, 2)
+		box.Color3 = Color3.new(1, 0, 0)
+		box.Transparency = 0.5
+		box.AlwaysOnTop = true
+		box.ZIndex = 5
+		box.Parent = workspace
+		espBoxes[char] = box
+	end
+end
+
+local function removeESPForCharacter(char)
+	if espBoxes[char] then
+		espBoxes[char]:Destroy()
+		espBoxes[char] = nil
+	end
+end
+
+local function onCharacterAdded(plr, char)
+	if not espEnabled then return end
+	removeESPForCharacter(char)
+	createESPForCharacter(char)
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		local conn
+		conn = humanoid.Died:Connect(function()
+			removeESPForCharacter(char)
+			if conn then conn:Disconnect() end
+		end)
+	end
+end
+
+local function toggleESP()
+	espEnabled = not espEnabled
+	if not espEnabled then
+		for _, box in pairs(espBoxes) do
+			box:Destroy()
+		end
+		espBoxes = {}
+		for plr, conn in pairs(characterConnections) do
+			conn:Disconnect()
+			characterConnections[plr] = nil
+		end
+		return
+	end
+	for _, plr in pairs(Players:GetPlayers()) do
+		if characterConnections[plr] then
+			characterConnections[plr]:Disconnect()
+		end
+		if plr.Character then
+			createESPForCharacter(plr.Character)
+		end
+		characterConnections[plr] = plr.CharacterAdded:Connect(function(char)
+			onCharacterAdded(plr, char)
+		end)
+	end
+	Players.PlayerAdded:Connect(function(plr)
+		characterConnections[plr] = plr.CharacterAdded:Connect(function(char)
+			onCharacterAdded(plr, char)
+		end)
+	end)
+	Players.PlayerRemoving:Connect(function(plr)
+		if characterConnections[plr] then
+			characterConnections[plr]:Disconnect()
+			characterConnections[plr] = nil
+		end
+		if plr.Character then
+			removeESPForCharacter(plr.Character)
+		end
+	end)
+end
+
+-- Teleport
+local teleporting = false
+mouse.Button1Down:Connect(function()
+	if teleporting and UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+		local pos = mouse.Hit.Position + Vector3.new(0, 3, 0)
+		local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			local _, yaw, roll = hrp.CFrame:ToEulerAnglesYXZ()
+			hrp.CFrame = CFrame.new(pos.X, pos.Y, pos.Z) * CFrame.Angles(0, yaw, roll)
+		end
+	end
+end)
+
+local function toggleTeleport()
+	teleporting = not teleporting
+end
+
+-- Buttons
+local flyButton = makeButton("Fly")
+local espButton = makeButton("ESP")
+local teleportButton = makeButton("Ctrl+Click Teleport")
+
+flyButton.MouseButton1Click:Connect(toggleFly)
+espButton.MouseButton1Click:Connect(toggleESP)
+teleportButton.MouseButton1Click:Connect(toggleTeleport)
+
+-- Key submit
+submitButton.MouseButton1Click:Connect(function()
+	if keyBox.Text == correctKey then
+		keyFrame.Visible = false
+		mainFrame.Visible = true
+	else
+		infoLabel.Text = "Incorrect key."
+	end
+end)
