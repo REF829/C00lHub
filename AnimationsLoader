@@ -1,0 +1,55 @@
+local idleAnimId = "rbxassetid://79563808380592"
+local walkAnimId = "rbxassetid://88630547927546"
+
+local character = script.Parent
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- Remove default animation script
+local animateScript = character:FindFirstChild("Animate")
+if animateScript then
+	animateScript:Destroy()
+end
+
+-- Load animations
+local idleAnim = Instance.new("Animation")
+idleAnim.AnimationId = idleAnimId
+local idleTrack = humanoid:LoadAnimation(idleAnim)
+idleTrack.Looped = true
+
+local walkAnim = Instance.new("Animation")
+walkAnim.AnimationId = walkAnimId
+local walkTrack = humanoid:LoadAnimation(walkAnim)
+walkTrack.Looped = true
+
+-- State
+local currentState = "Idle" -- or "Walking"
+
+-- Control playback
+local function playIdle()
+	if currentState ~= "Idle" then
+		walkTrack:Stop()
+		idleTrack:Play()
+		currentState = "Idle"
+	end
+end
+
+local function playWalk()
+	if currentState ~= "Walking" then
+		idleTrack:Stop()
+		walkTrack:Play()
+		currentState = "Walking"
+	end
+end
+
+-- Monitor movement
+game:GetService("RunService").Heartbeat:Connect(function()
+	local velocity = hrp.Velocity
+	local speed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
+
+	if speed > 1 then
+		playWalk()
+	else
+		playIdle()
+	end
+end)
