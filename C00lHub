@@ -128,8 +128,7 @@ local function toggleFly()
 			if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.LookVector end
 			if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.RightVector end
 			if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.RightVector end
-			if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += cam.UpVector end
-			if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= cam.UpVector end
+			-- Removed spacebar and left control vertical movement
 			if dir.Magnitude > 0 then
 				bv.Velocity = dir.Unit * 60
 			else
