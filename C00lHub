@@ -1,3 +1,4 @@
+print("C00lHub Loaded")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -13,8 +14,8 @@ local correctKey = "00816"
 
 -- Key Page
 local keyFrame = Instance.new("Frame", gui)
-keyFrame.Size = UDim2.new(0, 300, 0, 150)
-keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+keyFrame.Size = UDim2.new(0, 300, 0, 240)
+keyFrame.Position = UDim2.new(0.5, -150, 0.5, -120)
 keyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 keyFrame.BorderSizePixel = 0
 keyFrame.ClipsDescendants = true
@@ -37,7 +38,7 @@ keyBox.TextColor3 = Color3.new(1, 1, 1)
 keyBox.Font = Enum.Font.GothamBold
 keyBox.TextSize = 20
 keyBox.ClearTextOnFocus = false
-keyBox.PlaceholderText = "Type key here"
+keyBox.PlaceholderText = "Insert Key"
 keyBox.Text = ""
 
 local infoLabel = Instance.new("TextLabel", keyFrame)
@@ -49,16 +50,55 @@ infoLabel.Font = Enum.Font.GothamBold
 infoLabel.TextSize = 18
 infoLabel.Text = ""
 
+local copyLabel = Instance.new("TextLabel", keyFrame)
+copyLabel.Size = UDim2.new(1, -20, 0, 20)
+copyLabel.Position = UDim2.new(0, 10, 0, 125)
+copyLabel.BackgroundTransparency = 1
+copyLabel.TextColor3 = Color3.new(1, 1, 1)
+copyLabel.Font = Enum.Font.GothamBold
+copyLabel.TextSize = 16
+copyLabel.Text = "Get Key:"
+
+local copyBox = Instance.new("TextBox", keyFrame)
+copyBox.Size = UDim2.new(0.7, -15, 0, 25)
+copyBox.Position = UDim2.new(0, 10, 0, 145)
+copyBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+copyBox.TextColor3 = Color3.new(1, 1, 1)
+copyBox.Font = Enum.Font.Gotham
+copyBox.TextSize = 10
+copyBox.TextEditable = false
+copyBox.ClearTextOnFocus = false
+copyBox.Text = "https://form.typeform.com/to/rYq3emSW"
+
+local copyButton = Instance.new("TextButton", keyFrame)
+copyButton.Size = UDim2.new(0.3, -15, 0, 25)
+copyButton.Position = UDim2.new(0.7, 5, 0, 145)
+copyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+copyButton.TextColor3 = Color3.new(1, 1, 1)
+copyButton.Font = Enum.Font.GothamBold
+copyButton.TextSize = 14
+copyButton.Text = "Copy"
+
+copyButton.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard(correctKey)
+		copyButton.Text = "Copied!"
+		task.delay(1.5, function()
+			copyButton.Text = "Copy"
+		end)
+	end
+end)
+
 local submitButton = Instance.new("TextButton", keyFrame)
 submitButton.Size = UDim2.new(0, 100, 0, 35)
-submitButton.Position = UDim2.new(0.5, -50, 1, -40)
+submitButton.Position = UDim2.new(0.5, -50, 0, 185)
 submitButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 submitButton.TextColor3 = Color3.new(1, 1, 1)
 submitButton.Font = Enum.Font.GothamBold
 submitButton.TextSize = 18
 submitButton.Text = "Submit"
 
--- Main Hub Frame (hidden initially)
+-- Main Hub Frame
 local mainFrame = Instance.new("Frame", gui)
 mainFrame.Size = UDim2.new(0, 220, 0, 190)
 mainFrame.Position = UDim2.new(0, 100, 0, 100)
@@ -84,7 +124,7 @@ title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 20
-title.Text = "c00lHub"
+title.Text = "C00lHub"
 title.Parent = mainFrame
 
 -- Button factory
@@ -100,7 +140,7 @@ local function makeButton(text)
 	return b
 end
 
--- Fly variables
+-- Fly
 local flying = false
 local flyConn
 local bv, bg
@@ -128,7 +168,8 @@ local function toggleFly()
 			if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.LookVector end
 			if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.RightVector end
 			if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.RightVector end
-			-- Removed spacebar and left control vertical movement
+			if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += cam.UpVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= cam.UpVector end
 			if dir.Magnitude > 0 then
 				bv.Velocity = dir.Unit * 60
 			else
@@ -146,7 +187,7 @@ local function toggleFly()
 	end
 end
 
--- ESP variables
+-- ESP
 local espEnabled = false
 local espBoxes = {}
 local characterConnections = {}
